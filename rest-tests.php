@@ -21,6 +21,27 @@
  *     GNU General Public License for more details.
  */
 
+// custom post type
+add_action( 'init', function() {
+    register_post_type( 'fun_posts', array(
+        'label'               => __( 'fun posts', 'rest-tests' ),
+        'supports'            => array( 'title', 'editor', 'author', 'excerpt', 'thumbnail', 'custom-fields', ),
+        'public'              => true,
+        'menu_position'       => 5,
+        'capability_type'     => 'post',
+        'show_in_rest'        => true,
+    ) );
+}, 0 );
+
+// custom meta
+add_action( 'init', function(){
+    register_post_meta( 'fun_posts', 'fun_post_meta', array(
+        'type' => 'string',
+        'label' => 'Fun Post Meta',
+        'show_in_rest' => true,
+        'single' => true,
+    ) );
+} );
 
 // rest_prepare_{$this->post_type}
 add_filter( 'rest_prepare_post', function( $response, $post, $request ){
@@ -30,53 +51,76 @@ add_filter( 'rest_prepare_post', function( $response, $post, $request ){
         'alt' => get_post_meta( $response->data['featured_media'], TRUE )
     );
     $response->data['image'] = $image;
-    // $response->data['request_params'] = $request->get_params();
     // $response->data['title'] = $response->data['title']['rendered'] . 'addition';
+
+    // $categories = wp_get_post_categories( $post->ID, array( 'fields' => 'all' ) );
+    // $response->data['categories'] = $categories;
+
     return $response;
 }, 10, 3 );
 
-// rest_pre_echo_response
+// https://thriftydeveloper.com/2020/08/20/intercept-wordpress-api-requests/
 // add_filter( 'rest_pre_echo_response', function( $result, $server, $request ){
-//     $result[] = $request->get_params();
-//     return $result;
+//     if( strpos( $request->get_route(), '/v2/users' ) !== false && ! is_user_logged_in() ) {
+// 		return rest_ensure_response( [
+// 			'success'  => false,
+// 			'message' => __( 'You must be logged in to access /v2/users/* routes.', 'rest-tests' ),
+//             'hook' => 'rest_pre_echo_response',
+// 		] );
+// 	}
+
+// 	return $result;
 // }, 10, 3 );
 
+// https://tommcfarlin.com/incoming-wordpress-rest-api-requests/
+// add_filter( 'rest_pre_dispatch', function( $result, $server, $request ){
+//     if( strpos( $request->get_route(), '/v2/users' ) !== false && ! is_user_logged_in() ) {
+// 		return rest_ensure_response( [
+// 			'success'  => false,
+// 			'message' => __( 'You must be logged in to access /v2/users/* routes.', 'rest-tests' ),
+//             'hook' => 'rest_pre_dispatch',
+// 		] );
+// 	}
 
-// custom post type
-add_action( 'init', function() {
-    register_post_type( 'fun_posts', array(
-        'label'               => __( 'fun posts', 'rest-tests' ),
-        'labels'              => array(
-            'name'                => __( 'fun posts', 'Post Type General Name', 'rest-tests' ),
-            'singular_name'       => __( 'fun post', 'Post Type Singular Name', 'rest-tests' ),
-            'menu_name'           => __( 'fun posts', 'rest-tests' ),
-            'parent_item_colon'   => __( 'Parent fun post', 'rest-tests' ),
-            'all_items'           => __( 'All fun posts', 'rest-tests' ),
-            'view_item'           => __( 'View fun post', 'rest-tests' ),
-            'add_new_item'        => __( 'Add New fun post', 'rest-tests' ),
-            'add_new'             => __( 'Add New fun post', 'rest-tests' ),
-            'edit_item'           => __( 'Edit fun post', 'rest-tests' ),
-            'update_item'         => __( 'Update fun post', 'rest-tests' ),
-            'search_items'        => __( 'Search fun posts', 'rest-tests' ),
-            'not_found'           => __( 'Not Found', 'rest-tests' ),
-            'not_found_in_trash'  => __( 'Not found in Trash', 'rest-tests' ),
-        ),
-        'supports'            => array( 'title', 'editor', 'excerpt', 'thumbnail', 'revisions', 'custom-fields', ),
-        'public'              => true,
-        'menu_position'       => 5,
-        'menu_icon'           => 'dashicons-bank',
-        'capability_type'     => 'post',
-        'show_in_rest'        => true,
-        'rewrite'             => array( 'slug' => 'fun-posts' ),
-        'taxonomies'          => [''],
-    ) );
-}, 0 );
+// 	return $result;
+// }, 10, 3 );
 
-add_action( 'init', function(){
-    register_post_meta( 'fun_posts', 'fun_post_meta', array(
-        'type' => 'string',
-        'label' => 'Fun Post Meta',
-        'show_in_rest' => true,
-        'single' => true,
+// https://developer.wordpress.org/rest-api/extending-the-rest-api/modifying-responses/#adding-custom-fields-to-api-responses
+add_action( 'rest_api_init', function(){
+    register_rest_field( 'post', 'fun_rest_field', array(
+        'get_callback' => function( $object_arr ){
+            $value = array(
+                'wink' => 'hello there',
+                'wonk' => 5
+            );
+            return $value;
+        },
+        'update_callback' => function( $value, $object ) {
+            // need to do the updating thing!
+            // $ret = wp_update_comment( array(
+            //     'comment_ID'    => $comment_obj->comment_ID,
+            //     'comment_karma' => $karma
+            // ) );
+            // if ( false === $ret ) {
+            //     return new WP_Error(
+            //       'rest_comment_karma_failed',
+            //       __( 'Failed to update comment karma.' ),
+            //       array( 'status' => 500 )
+            //     );
+            // }
+            // return true;
+        },
+        'schema' => array(
+            'description' => __( 'A Fun REST Field!' ),
+            'type' => 'object',
+            'properties' => array(
+                'wink' => array(
+                    'type' => 'string'
+                ),
+                'wonk' => array(
+                    'type' => 'integer'
+                )
+            )
+        )
     ) );
 } );
