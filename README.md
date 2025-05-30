@@ -8,24 +8,24 @@ Digital Collegium Pennsylvania Regional Conference, June 2025
 3. [D.I.Y. It](#diy-it)
 4. [References](#helpful-references)
 
+---
+
 ## Basics of WordPress's REST API
+WordPress's REST API was started as a plugin, but was fully integrated into core with 4.7 in 2016. It's the foundation of the block editor, enables useage of WordPress as a headless CMS, and its ability to be modified allows for custom routes and endpoints that can do quite a bit more.
 
-### A little background
-
-### What is it used for?
-
-### What can you use it for?
+Content that is public on your site is generally publicly accessible via the REST API, while private content, password-protected content, internal users, custom post types, and metadata is only available with authentication or if you specifically set it to be so.
 
 ### Terminology
-- A **route** is
-- An **endpoint** is
-- A **namespace** is
-https://developer.wordpress.org/rest-api/extending-the-rest-api/routes-and-endpoints/
-https://developer.wordpress.org/rest-api/extending-the-rest-api/routes-and-endpoints/
-https://developer.wordpress.org/rest-api/extending-the-rest-api/routes-and-endpoints/
+- A **route** is the name used to access an endpoint; the URI that can be mapped to different HTTP methods
+- An **endpoint** is the function called when an individual HTTP method is called on a route
+- A **namespace** is a way to group routes
+- A **request** is an instance of the `WP_REST_Request` class, which stores and retrieves information for the current request
+- A **response** is data you get back from the API, either what's requested or an error. The `WP_REST_Response` class can be used to interact with this data
+- A **controller class** is used to unify and coordinate all the logic for a given route, which usually represents a specific type of data object in your site. Make a custom controller a subclass of `WP_REST_Controller` for easier schema validation
+- **Schema** defines the structure of the data that will be worked with in an endpoint, and helps create maintainable, discoverable, and extensible endpoints
 
 ### How do you access it?
-WordPress’s default routes are found at /wp-json/wp/v2/*, and you can see all routes at /wp-json/.
+WordPress’s default routes are found at `/wp-json/wp/v2/*`, and you can see all routes at `/wp-json/`.
 
 Some of the default routes include:
 - [/wp-json/wp/v2/posts](https://developer.wordpress.org/rest-api/reference/posts/)
@@ -34,10 +34,16 @@ Some of the default routes include:
 - [/wp-json/wp/v2/media](https://developer.wordpress.org/rest-api/reference/media/)
 - [/wp-json/wp/v2/taxonomies](https://developer.wordpress.org/rest-api/reference/taxonomies/)
 
-A full list of endpoints is found at [https://developer.wordpress.org/rest-api/reference/](https://developer.wordpress.org/rest-api/reference/).
+On sites without pretty permalinks, the route is added to the URL as the rest_route parameter. For example, the URL to access the `posts` route would be `http://example.com/?rest_route=/wp/v2/posts`.
 
-### Schema
-https://developer.wordpress.org/rest-api/extending-the-rest-api/schema/#json-schema-basics
+### _fields global parameter
+WordPress has global parameters that apply to every resource and control how the API handles the request. The `_fields` parameter in particular is useful for narrowing down which fields are included in the response.
+
+For example, `/wp-json/wp/v2/fun_posts/?_fields=title,content,meta` would return only the title, content, and meta fields for the `fun_posts` GET endpoint.
+
+These parameters work on custom API endpoints as well!
+
+---
 
 ## Modifying Default Responses
 **WARNING**: You can mess up the block editor (or other plugins) if you remove or change core fields in the response objects. No matter what you want from the API response, it’s best to add an entirely new field instead of changing a field that already exists.
@@ -168,9 +174,6 @@ add_action( 'rest_api_init', function(){
 
 ### Changing what data is selected
 
-#### custom controllers
-https://developer.wordpress.org/rest-api/extending-the-rest-api/adding-rest-api-support-for-custom-content-types/
-
 #### rest_X_query
 
 #### rest_post_search_query
@@ -182,9 +185,13 @@ https://developer.wordpress.org/rest-api/extending-the-rest-api/adding-rest-api-
 #### pre_get_posts
 - firing on /wp-json/ URLs only
 
+---
+
 ## D.I.Y. It
 
 You should use the validate_callback for your arguments to verify whether the input you are receiving is valid. The sanitize_callback should be used to transform the argument input or clean out unwanted parts out of the argument, before the argument is processed by the main callback.
+
+https://developer.wordpress.org/rest-api/extending-the-rest-api/adding-rest-api-support-for-custom-content-types/
 
 ### rest_ensure_response
 https://developer.wordpress.org/reference/functions/rest_ensure_response/
@@ -192,9 +199,17 @@ https://developer.wordpress.org/reference/functions/rest_ensure_response/
 ### CURIEs
 https://developer.wordpress.org/rest-api/extending-the-rest-api/modifying-responses/#adding-links-to-the-api-response
 
+---
+
 ## Helpful References
+- [REST API Handbook](https://developer.wordpress.org/rest-api/)
 - [WordPress API Reference](https://developer.wordpress.org/rest-api/reference/)
+- [WP_REST_Request](https://developer.wordpress.org/reference/classes/wp_rest_request/)
+- [WP_REST_Response](https://developer.wordpress.org/reference/classes/wp_rest_response/)
+- [Routes and Endpoints](https://developer.wordpress.org/rest-api/extending-the-rest-api/routes-and-endpoints/)
 - [JSON Schema Basics](https://developer.wordpress.org/rest-api/extending-the-rest-api/schema/#json-schema-basics)
+- [JSON Primitive Types](https://developer.wordpress.org/rest-api/extending-the-rest-api/schema/#primitive-types)
+- [Controller Classes](https://developer.wordpress.org/rest-api/extending-the-rest-api/controller-classes/)
 - [register_post_type](https://developer.wordpress.org/reference/functions/register_post_type/)
 - [register_post_meta](https://developer.wordpress.org/reference/functions/register_post_meta/)
 - [register_meta](https://developer.wordpress.org/reference/functions/register_meta/)
@@ -205,4 +220,4 @@ https://developer.wordpress.org/rest-api/extending-the-rest-api/modifying-respon
 - [Manipulate Incoming WordPress REST API Requests](https://tommcfarlin.com/incoming-wordpress-rest-api-requests/)
 - [Adding Custom Fields to API Responses](https://developer.wordpress.org/rest-api/extending-the-rest-api/modifying-responses/#adding-custom-fields-to-api-responses)
 - [register_rest_field](https://developer.wordpress.org/reference/functions/register_rest_field/)
-- [register_rest_field vs _register_meta](https://developer.wordpress.org/rest-api/extending-the-rest-api/modifying-responses/#using-register_rest_field-vs-register_meta)
+- [register_rest_field vs register_meta](https://developer.wordpress.org/rest-api/extending-the-rest-api/modifying-responses/#using-register_rest_field-vs-register_meta)
