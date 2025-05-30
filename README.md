@@ -48,7 +48,7 @@ These parameters work on custom API endpoints as well!
 ## Modifying Default Responses
 **WARNING**: You can mess up the block editor (or other plugins) if you remove or change core fields in the response objects. No matter what you want from the API response, it’s best to add an entirely new field instead of changing a field that already exists.
 
-### Modifying the data that's returned
+### Modifying the response data
 Contained here are a selection of functions and hooks that modify data in WordPress’s default REST API routes.
 
 #### Function: `register_post_type`
@@ -110,39 +110,6 @@ add_filter( 'rest_prepare_post', function ( $response, $post, $request ) {
       return $response;
 } , 10, 3);
 ```
-#### Hook: `rest_pre_echo_response`
-- Called right before the REST API gives its data to the user; the last hook called
-- Can lock down certain routes if you want to prevent users (all, or just non-logged-in users) from accessing routes
-- Can just modify the results array
-- `$result`: array, results array from API request
-- `$server`: WP_REST_Server, server instance
-- `$request`: WP_REST_Request, the incoming request
-```
-add_filter( 'rest_pre_echo_response', function ( $result, $server, $request ) {
-    if( strpos( $request->get_route(), '/v2/users' ) !== false && ! is_user_logged_in() ) {
-        return rest_ensure_response( [
-            'success'  => false,
-            'message' => __( 'You must be logged in to access /v2/users/* routes.', 'td-lockdown-users-api' ),
-        ] );
-    }
-} , 10, 3);
-```
-#### Hook: `rest_pre_dispatch`
-- Triggered before the request is processed by WordPress, allows for intercepting for manipulation and inspection
-- Can be overridden by rest_pre_echo_response
-- `$result`: various, different types of data returned to the client
-- `$server`: WP_REST_Server, server instance
-- `$request`: information about the request
-```
-add_filter( 'rest_pre_dispatch', function ( $result, $server, $request ) {
-    if( strpos( $request->get_route(), '/v2/users' ) !== false && ! is_user_logged_in() ) {
-        return rest_ensure_response( [
-            'success'  => false,
-            'message' => __( 'You must be logged in to access /v2/users/* routes.', 'td-lockdown-users-api' ),
-        ] );
-    }
-} , 10, 3);
-```
 #### Function: `register_rest_field`
 - Adds data to the global variable `$wp_rest_additional_fields`, which contains an array of field definitions containing the callbacks used to retrieve or update the field’s value
 - This field gets folded into the JSON object before values added using `rest_prepare_{$this->post_type}`
@@ -171,20 +138,50 @@ add_action( 'rest_api_init', function(){
     ) );
 } );
 ```
+#### Other Response-Modifying Hooks in order of execution
+These hooks allow for modification and inspection of the request at different stages of the process. Hooks that happen later in the order will override hooks that happen earlier, if you include multiple.
 
-### Changing what data is selected
+1. `rest_pre_dispatch`: triggered before the request is processed at all by WordPress; filters the pre-calculated result of a REST API dispatch request
+2. `rest_request_before_callbacks`: filters response before executing any REST API callbacks
+3. `rest_dispatch_request`: filters the REST API dispatch request result
+4. `rest_request_after_callbacks`: filters the response immediately after executing any REST API callbacks
+5. `rest_post_dispatch`: filters the REST API response
+6. `rest_pre_echo_response`: allows modification of the response data after inserting ambedded data; called right before the REST API gives the response to the user
 
-#### rest_X_query
+### Changing the query
+When you've added custom meta to a post, it's helpful to be able to query in the REST API based on that meta.
 
-#### rest_post_search_query
-
-#### rest_term_search_query
-
-#### rest_request_before_callbacks
-
-#### pre_get_posts
-- firing on /wp-json/ URLs only
-
+#### Hook: `rest_{$this->post_type}_query`
+- Filters WP_Query arguments when querying posts via the REST API, takes place after the tax_query arg is generated
+- The dynamic portion of the hook refers to the slug of the post type
+  - Example: `rest_fun_posts_query`
+- `$args`: array of arguments for WP_Query
+- `$request`: WP_REST_Request, the current request, including parameters
+```
+add_filter( 'rest_fun_posts_query', function( $args, $request ){
+    if( isset( $request['fun_post_meta'] ) ) {
+        $args['meta_key'] = 'fun_post_meta';
+        $args['meta_value'] = esc_attr( $request['fun_post_meta'] );
+    }
+    return $args;
+} );
+```
+#### Hook: `pre_get_posts`
+- Not a REST API-centric hook, but if you check the request URI for `/wp-json/`, you can make sure your function will only fire on REST API requests
+```
+if ( strpos( $_SERVER['REQUEST_URI'], '/wp-json/' ) !== false ) {
+    add_filter( 'pre_get_posts', function( $query ) {
+        if ( $query->get( 'post_type' ) != 'fun_posts' ) {
+			return $query;
+		}
+        if ( isset( $_GET['fun_post_meta'] ) ) {
+            $query->set( 'meta_key', 'fun_post_meta' );
+            $query->set( 'meta_value', $_GET['fun_post_meta'] );
+        }
+        return $query;
+    } );
+}
+```
 ---
 
 ## D.I.Y. It
@@ -202,6 +199,7 @@ https://developer.wordpress.org/rest-api/extending-the-rest-api/modifying-respon
 ---
 
 ## Helpful References
+- [REST API FAQ](https://developer.wordpress.org/rest-api/frequently-asked-questions/)
 - [REST API Handbook](https://developer.wordpress.org/rest-api/)
 - [WordPress API Reference](https://developer.wordpress.org/rest-api/reference/)
 - [WP_REST_Request](https://developer.wordpress.org/reference/classes/wp_rest_request/)
@@ -221,3 +219,4 @@ https://developer.wordpress.org/rest-api/extending-the-rest-api/modifying-respon
 - [Adding Custom Fields to API Responses](https://developer.wordpress.org/rest-api/extending-the-rest-api/modifying-responses/#adding-custom-fields-to-api-responses)
 - [register_rest_field](https://developer.wordpress.org/reference/functions/register_rest_field/)
 - [register_rest_field vs register_meta](https://developer.wordpress.org/rest-api/extending-the-rest-api/modifying-responses/#using-register_rest_field-vs-register_meta)
+- [List Post Arguments](https://developer.wordpress.org/rest-api/reference/posts/#arguments)

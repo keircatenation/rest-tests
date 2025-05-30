@@ -43,6 +43,7 @@ add_action( 'init', function(){
     ) );
 } );
 
+// rest_prepare_{$this->post_type}
 add_filter( 'rest_prepare_post', function( $response, $post, $request ){
     $image = array(
         'html' => get_the_post_thumbnail( $post->ID ),
@@ -58,31 +59,7 @@ add_filter( 'rest_prepare_post', function( $response, $post, $request ){
     return $response;
 }, 10, 3 );
 
-// add_filter( 'rest_pre_echo_response', function( $result, $server, $request ){
-//     if( strpos( $request->get_route(), '/v2/users' ) !== false && ! is_user_logged_in() ) {
-// 		return rest_ensure_response( [
-// 			'success'  => false,
-// 			'message' => __( 'You must be logged in to access /v2/users/* routes.', 'rest-tests' ),
-//             'hook' => 'rest_pre_echo_response',
-// 		] );
-// 	}
-
-// 	return $result;
-// }, 10, 3 );
-
-// add_filter( 'rest_pre_dispatch', function( $result, $server, $request ){
-//     if( strpos( $request->get_route(), '/v2/users' ) !== false && ! is_user_logged_in() ) {
-// 		return rest_ensure_response( [
-// 			'success'  => false,
-// 			'message' => __( 'You must be logged in to access /v2/users/* routes.', 'rest-tests' ),
-//             'hook' => 'rest_pre_dispatch',
-// 		] );
-// 	}
-
-// 	return $result;
-// }, 10, 3 );
-
-
+// register_rest_field
 add_action( 'rest_api_init', function(){
     register_rest_field( 'post', 'fun_rest_field', array(
         'get_callback' => function( $object_arr ){
@@ -121,3 +98,62 @@ add_action( 'rest_api_init', function(){
         )
     ) );
 } );
+
+/**
+ * Other response-modifying hooks
+ */
+
+// rest_pre_dispatch -- before the request is processed by WordPress
+// add_filter( 'rest_pre_dispatch', function( $result, $server, $request ){
+//     if( strpos( $request->get_route(), '/v2/users' ) !== false && ! is_user_logged_in() ) {
+// 		return rest_ensure_response( [
+// 			'success'  => false,
+// 			'message' => __( 'You must be logged in to access /v2/users/* routes.', 'rest-tests' ),
+//             'hook' => 'rest_pre_dispatch',
+// 		] );
+// 	}
+// 	return $result;
+// }, 10, 3 );
+
+// rest_pre_echo_response -- right before WordPress delivers the response
+// add_filter( 'rest_pre_echo_response', function( $result, $server, $request ){
+//     if( strpos( $request->get_route(), '/v2/users' ) !== false && ! is_user_logged_in() ) {
+// 		return rest_ensure_response( [
+// 			'success'  => false,
+// 			'message' => __( 'You must be logged in to access /v2/users/* routes.', 'rest-tests' ),
+//             'hook' => 'rest_pre_echo_response',
+// 		] );
+// 	}
+// 	return $result;
+// }, 10, 3 );
+
+
+
+// add_filter( 'rest_fun_posts_query', function( $args, $request ){
+//     if( isset( $request['fun_post_meta'] ) ) {
+//         $args['meta_key'] = 'fun_post_meta';
+//         $args['meta_value'] = esc_attr( $request['fun_post_meta'] );
+//     }
+//     return $args;
+// },  10, 3 );
+
+// add_filter( 'rest_post_query', function( $args, $request ){
+//     if( isset( $args['tax_query'] ) ) {
+//         unset( $args['tax_query'] );
+//     }
+//     return $args;
+// },  10, 3 );
+
+// pre_get_posts firing only on REST API requests
+// if ( strpos( $_SERVER['REQUEST_URI'], '/wp-json/' ) !== false ) {
+//     add_filter( 'pre_get_posts', function( $query ) {
+//         if ( $query->get( 'post_type' ) != 'fun_posts' ) {
+// 			return $query;
+// 		}
+//         if ( isset( $_GET['fun_post_meta'] ) ) {
+//             $query->set( 'meta_key', 'fun_post_meta' );
+//             $query->set( 'meta_value', $_GET['fun_post_meta'] );
+//         }
+//         return $query;
+//     } );
+// }
