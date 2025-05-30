@@ -21,7 +21,11 @@
  *     GNU General Public License for more details.
  */
 
-// custom post type
+
+
+/**
+ * ### Function: `register_post_type`
+ */
 add_action( 'init', function() {
     register_post_type( 'fun_posts', array(
         'label'               => __( 'fun posts', 'rest-tests' ),
@@ -29,11 +33,23 @@ add_action( 'init', function() {
         'public'              => true,
         'menu_position'       => 5,
         'capability_type'     => 'post',
+        'rewrite'             => array( 'slug' => 'funnies' ),
         'show_in_rest'        => true,
+        'rest_base'           => 'funnies',
+        'rest_controller_class' => 'WP_REST_Posts_Controller',
     ) );
 }, 0 );
 
-// custom meta
+// add_filter( 'rest_route_for_post', function( $route, $post ){
+//     if ($post->post_type == 'fun_posts' ){
+//         $route = '/wp/v2/funnies/' . $post->ID;
+//     }
+//     return $route;
+// } );
+
+/**
+ * ### Function: `register_post_meta`
+ */
 add_action( 'init', function(){
     register_post_meta( 'fun_posts', 'fun_post_meta', array(
         'type' => 'string',
@@ -43,7 +59,10 @@ add_action( 'init', function(){
     ) );
 } );
 
-// rest_prepare_{$this->post_type}
+
+/**
+ * ### Hook: `rest_prepare_{$this->post_type}`
+ */
 add_filter( 'rest_prepare_post', function( $response, $post, $request ){
     $image = array(
         'html' => get_the_post_thumbnail( $post->ID ),
@@ -59,7 +78,10 @@ add_filter( 'rest_prepare_post', function( $response, $post, $request ){
     return $response;
 }, 10, 3 );
 
-// register_rest_field
+
+/**
+ * ### Function: `register_rest_field`
+ */
 add_action( 'rest_api_init', function(){
     register_rest_field( 'post', 'fun_rest_field', array(
         'get_callback' => function( $object_arr ){
@@ -99,8 +121,28 @@ add_action( 'rest_api_init', function(){
     ) );
 } );
 
+
 /**
- * Other response-modifying hooks
+ * ### Hook: `rest_{$this->post_type}_query`
+ */
+// add_filter( 'rest_fun_posts_query', function( $args, $request ){
+//     if( isset( $request['fun_post_meta'] ) ) {
+//         $args['meta_key'] = 'fun_post_meta';
+//         $args['meta_value'] = esc_attr( $request['fun_post_meta'] );
+//     }
+//     return $args;
+// },  10, 3 );
+
+// add_filter( 'rest_post_query', function( $args, $request ){
+//     if( isset( $args['tax_query'] ) ) {
+//         unset( $args['tax_query'] );
+//     }
+//     return $args;
+// },  10, 3 );
+
+
+/**
+ * ### Other Response-Modifying Hooks in order of execution
  */
 
 // rest_pre_dispatch -- before the request is processed by WordPress
@@ -127,24 +169,9 @@ add_action( 'rest_api_init', function(){
 // 	return $result;
 // }, 10, 3 );
 
-
-
-// add_filter( 'rest_fun_posts_query', function( $args, $request ){
-//     if( isset( $request['fun_post_meta'] ) ) {
-//         $args['meta_key'] = 'fun_post_meta';
-//         $args['meta_value'] = esc_attr( $request['fun_post_meta'] );
-//     }
-//     return $args;
-// },  10, 3 );
-
-// add_filter( 'rest_post_query', function( $args, $request ){
-//     if( isset( $args['tax_query'] ) ) {
-//         unset( $args['tax_query'] );
-//     }
-//     return $args;
-// },  10, 3 );
-
-// pre_get_posts firing only on REST API requests
+/**
+ * ### Hook: `pre_get_posts`
+ */
 // if ( strpos( $_SERVER['REQUEST_URI'], '/wp-json/' ) !== false ) {
 //     add_filter( 'pre_get_posts', function( $query ) {
 //         if ( $query->get( 'post_type' ) != 'fun_posts' ) {
@@ -157,3 +184,11 @@ add_action( 'rest_api_init', function(){
 //         return $query;
 //     } );
 // }
+
+/**
+ * Custom Controllers
+ */
+
+class Fun_Posts_Controller extends WP_REST_Controller{
+    
+}

@@ -48,14 +48,13 @@ These parameters work on custom API endpoints as well!
 ## Modifying Default Responses
 **WARNING**: You can mess up the block editor (or other plugins) if you remove or change core fields in the response objects. No matter what you want from the API response, it’s best to add an entirely new field instead of changing a field that already exists.
 
-### Modifying the response data
-Contained here are a selection of functions and hooks that modify data in WordPress’s default REST API routes.
-
-#### Function: `register_post_type`
+### Function: `register_post_type`
 - Used to create custom post types
 - `show_in_rest`: must be set to true
 - If true, then a default endpoint is created at `/wp-json/wp/v2/{$this->post_type}`
-- If using custom fields, you need `custom-fields` support
+- `rest_base`: can be used to specify a custom REST base, like a custom slug
+- `rest_controller_class`: can be used to distinguish a custom controller class
+  - Use the `rest_route_for_post` filter to provide the route if using a custom controller class
 ```
 add_action( 'init', function() {
     register_post_type( 'fun_posts', array(
@@ -68,7 +67,7 @@ add_action( 'init', function() {
     ) );
 }, 0 );
 ```
-#### Functions: `register_meta` and `register_post_meta`
+### Functions: `register_meta` and `register_post_meta`
 - Used to create custom meta for objects
 - `show_in_rest`: must be set to true
 - If true, then it automatically appears in the `meta` array in default routes
@@ -97,7 +96,7 @@ add_action( 'init', function(){
     ) );
 } );
 ```
-#### Hook: `rest_prepare_{$this->post_type}`
+### Hook: `rest_prepare_{$this->post_type}`
 - Called when preparing a single object of a single post type
 - The dynamic portion of the hook refers to the slug of the post type
   - Example: `rest_prepare_fun_posts`
@@ -110,7 +109,7 @@ add_filter( 'rest_prepare_post', function ( $response, $post, $request ) {
       return $response;
 } , 10, 3);
 ```
-#### Function: `register_rest_field`
+### Function: `register_rest_field`
 - Adds data to the global variable `$wp_rest_additional_fields`, which contains an array of field definitions containing the callbacks used to retrieve or update the field’s value
 - This field gets folded into the JSON object before values added using `rest_prepare_{$this->post_type}`
 - `$object_type`: name of the object
@@ -138,20 +137,7 @@ add_action( 'rest_api_init', function(){
     ) );
 } );
 ```
-#### Other Response-Modifying Hooks in order of execution
-These hooks allow for modification and inspection of the request at different stages of the process. Hooks that happen later in the order will override hooks that happen earlier, if you include multiple.
-
-1. `rest_pre_dispatch`: triggered before the request is processed at all by WordPress; filters the pre-calculated result of a REST API dispatch request
-2. `rest_request_before_callbacks`: filters response before executing any REST API callbacks
-3. `rest_dispatch_request`: filters the REST API dispatch request result
-4. `rest_request_after_callbacks`: filters the response immediately after executing any REST API callbacks
-5. `rest_post_dispatch`: filters the REST API response
-6. `rest_pre_echo_response`: allows modification of the response data after inserting ambedded data; called right before the REST API gives the response to the user
-
-### Changing the query
-When you've added custom meta to a post, it's helpful to be able to query in the REST API based on that meta.
-
-#### Hook: `rest_{$this->post_type}_query`
+### Hook: `rest_{$this->post_type}_query`
 - Filters WP_Query arguments when querying posts via the REST API, takes place after the tax_query arg is generated
 - The dynamic portion of the hook refers to the slug of the post type
   - Example: `rest_fun_posts_query`
@@ -166,7 +152,17 @@ add_filter( 'rest_fun_posts_query', function( $args, $request ){
     return $args;
 } );
 ```
-#### Hook: `pre_get_posts`
+### Other Response-Modifying Hooks in order of execution
+These hooks allow for modification and inspection of the request at different stages of the process. Hooks that happen later in the order will override hooks that happen earlier, if you include multiple.
+
+1. `rest_pre_dispatch`: triggered before the request is processed at all by WordPress; filters the pre-calculated result of a REST API dispatch request
+2. `rest_request_before_callbacks`: filters response before executing any REST API callbacks
+3. `rest_dispatch_request`: filters the REST API dispatch request result
+4. `rest_request_after_callbacks`: filters the response immediately after executing any REST API callbacks
+5. `rest_post_dispatch`: filters the REST API response
+6. `rest_pre_echo_response`: allows modification of the response data after inserting ambedded data; called right before the REST API gives the response to the user
+
+### Hook: `pre_get_posts`
 - Not a REST API-centric hook, but if you check the request URI for `/wp-json/`, you can make sure your function will only fire on REST API requests
 ```
 if ( strpos( $_SERVER['REQUEST_URI'], '/wp-json/' ) !== false ) {
@@ -185,6 +181,11 @@ if ( strpos( $_SERVER['REQUEST_URI'], '/wp-json/' ) !== false ) {
 ---
 
 ## D.I.Y. It
+
+### Custom Controllers
+agha
+
+### PROXY ME, BABY
 
 You should use the validate_callback for your arguments to verify whether the input you are receiving is valid. The sanitize_callback should be used to transform the argument input or clean out unwanted parts out of the argument, before the argument is processed by the main callback.
 
