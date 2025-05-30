@@ -3,12 +3,12 @@ Keiran Pillman
 Webmaster, Memorial Art Gallery of the University of Rochester
 Digital Collegium Pennsylvania Regional Conference, June 2025
 
-[Basics](#basics)
-[Modifying It](#modifications)
-[D.I.Y. It](#diy-it-creations)
-[References](#helpful-references-references)
+1. [Basics](#basics-of-wordpresss-rest-api-basics)
+2. [Modifying It](#modifying-default-responses)
+3. [D.I.Y. It](#diy-it)
+4. [References](#helpful-references)
 
-## Basics of WordPress's REST API {#basics}
+## Basics of WordPress's REST API
 
 ### A little background
 
@@ -39,7 +39,7 @@ A full list of endpoints is found at [https://developer.wordpress.org/rest-api/r
 ### Schema
 https://developer.wordpress.org/rest-api/extending-the-rest-api/schema/#json-schema-basics
 
-## Modifying Default Responses {#modifications}
+## Modifying Default Responses
 **WARNING**: You can mess up the block editor (or other plugins) if you remove or change core fields in the response objects. No matter what you want from the API response, it’s best to add an entirely new field instead of changing a field that already exists.
 
 ### Modifying the data that's returned
@@ -182,7 +182,7 @@ https://developer.wordpress.org/rest-api/extending-the-rest-api/adding-rest-api-
 #### pre_get_posts
 - firing on /wp-json/ URLs only
 
-## D.I.Y. It {#creations}
+## D.I.Y. It
 
 You should use the validate_callback for your arguments to verify whether the input you are receiving is valid. The sanitize_callback should be used to transform the argument input or clean out unwanted parts out of the argument, before the argument is processed by the main callback.
 
@@ -192,7 +192,7 @@ https://developer.wordpress.org/reference/functions/rest_ensure_response/
 ### CURIEs
 https://developer.wordpress.org/rest-api/extending-the-rest-api/modifying-responses/#adding-links-to-the-api-response
 
-## Helpful References {#references}
+## Helpful References
 - [WordPress API Reference](https://developer.wordpress.org/rest-api/reference/)
 - [JSON Schema Basics](https://developer.wordpress.org/rest-api/extending-the-rest-api/schema/#json-schema-basics)
 - [register_post_type](https://developer.wordpress.org/reference/functions/register_post_type/)
