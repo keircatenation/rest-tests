@@ -43,7 +43,6 @@ add_action( 'init', function(){
     ) );
 } );
 
-// rest_prepare_{$this->post_type}
 add_filter( 'rest_prepare_post', function( $response, $post, $request ){
     $image = array(
         'html' => get_the_post_thumbnail( $post->ID ),
@@ -59,7 +58,6 @@ add_filter( 'rest_prepare_post', function( $response, $post, $request ){
     return $response;
 }, 10, 3 );
 
-// https://thriftydeveloper.com/2020/08/20/intercept-wordpress-api-requests/
 // add_filter( 'rest_pre_echo_response', function( $result, $server, $request ){
 //     if( strpos( $request->get_route(), '/v2/users' ) !== false && ! is_user_logged_in() ) {
 // 		return rest_ensure_response( [
@@ -72,7 +70,6 @@ add_filter( 'rest_prepare_post', function( $response, $post, $request ){
 // 	return $result;
 // }, 10, 3 );
 
-// https://tommcfarlin.com/incoming-wordpress-rest-api-requests/
 // add_filter( 'rest_pre_dispatch', function( $result, $server, $request ){
 //     if( strpos( $request->get_route(), '/v2/users' ) !== false && ! is_user_logged_in() ) {
 // 		return rest_ensure_response( [
@@ -85,7 +82,7 @@ add_filter( 'rest_prepare_post', function( $response, $post, $request ){
 // 	return $result;
 // }, 10, 3 );
 
-// https://developer.wordpress.org/rest-api/extending-the-rest-api/modifying-responses/#adding-custom-fields-to-api-responses
+
 add_action( 'rest_api_init', function(){
     register_rest_field( 'post', 'fun_rest_field', array(
         'get_callback' => function( $object_arr ){
