@@ -1,6 +1,6 @@
 # More than an Extension: Customizing the WordPress REST API
-Keiran Pillman
-Webmaster, Memorial Art Gallery of the University of Rochester
+Keiran Pillman<br>
+Webmaster, Memorial Art Gallery of the University of Rochester<br>
 Digital Collegium Pennsylvania Regional Conference, June 2025
 
 1. [Basics](#basics-of-wordpresss-rest-api-basics)
@@ -183,7 +183,20 @@ if ( strpos( $_SERVER['REQUEST_URI'], '/wp-json/' ) !== false ) {
 ## D.I.Y. It
 
 ### Custom Controllers
-agha
+You can specify a custom controller to replace the default `WP_REST_Posts_Controller` controller for custom post types. It's useful to extend the `WP_Rest_Controller`, the base class for all core WordPress endpoints, to take advantage of built-in methods that standardize the output of resources.
+
+Included methods include:
+- `prepare_response_for_collection`
+- `add_additional_fields_to_object`: append any registered REST fields to your prepared response object
+- `get_fields_for_response`: inspect the `_fields` query parameter to determine which response fields have been requested
+- `get_context_param`
+- `filter_response_by_context`
+- `get_collection_params`
+
+Endpoint-specific methods *do* need to be added, such as:
+- `get_item`
+- `register_routes`
+- `update_item_permissions_check`
 
 ### PROXY ME, BABY
 
@@ -209,6 +222,7 @@ https://developer.wordpress.org/rest-api/extending-the-rest-api/modifying-respon
 - [JSON Schema Basics](https://developer.wordpress.org/rest-api/extending-the-rest-api/schema/#json-schema-basics)
 - [JSON Primitive Types](https://developer.wordpress.org/rest-api/extending-the-rest-api/schema/#primitive-types)
 - [Controller Classes](https://developer.wordpress.org/rest-api/extending-the-rest-api/controller-classes/)
+- [WP_REST_Controller Methods](https://developer.wordpress.org/reference/classes/wp_rest_controller/#methods)
 - [register_post_type](https://developer.wordpress.org/reference/functions/register_post_type/)
 - [register_post_meta](https://developer.wordpress.org/reference/functions/register_post_meta/)
 - [register_meta](https://developer.wordpress.org/reference/functions/register_meta/)
