@@ -54,7 +54,6 @@ These parameters work on custom API endpoints as well!
 - If true, then a default endpoint is created at `/wp-json/wp/v2/{$this->post_type}`
 - `rest_base`: can be used to specify a custom REST base, like a custom slug
 - `rest_controller_class`: can be used to distinguish a custom controller class
-  - Use the `rest_route_for_post` filter to provide the route if using a custom controller class
 ```
 add_action( 'init', function() {
     register_post_type( 'fun_posts', array(
@@ -69,7 +68,7 @@ add_action( 'init', function() {
 ```
 ### Functions: `register_meta` and `register_post_meta`
 - Used to create custom meta for objects
-- `show_in_rest`: must be set to true
+- `show_in_rest`: must be set to true *or* set to a schema object when defining an array or object
 - If true, then it automatically appears in the `meta` array in default routes
 ```
 add_action( 'init', function(){
@@ -99,7 +98,6 @@ add_action( 'init', function(){
 ### Hook: `rest_prepare_{$this->post_type}`
 - Called when preparing a single object of a single post type
 - The dynamic portion of the hook refers to the slug of the post type
-  - Example: `rest_prepare_fun_posts`
 - `$response`: WP_REST_Response, the data that will be returned
 - `$post`: WP_Post, the current post object
 - `$request`: WP_REST_Request, the current request, including parameters

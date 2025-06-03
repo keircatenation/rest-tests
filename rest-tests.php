@@ -134,6 +134,7 @@ add_action( 'init', function() {
 // add_action( 'rest_api_init', function(){
 //     register_rest_field( 'exhibition_post_type', 'testimonials', array(
 //         'get_callback' => function( $object_arr ){
+//             // get field value from wherever it's coming from
 //             $post_ID = $object_arr['id'];
 //             $value = array(
 //                 'we love this exhibition!',
@@ -143,17 +144,6 @@ add_action( 'init', function() {
 //         },
 //         'update_callback' => function( $value, $object ) {
 //             // need to do the updating thing!
-//             // $ret = wp_update_comment( array(
-//             //     'comment_ID'    => $comment_obj->comment_ID,
-//             //     'comment_karma' => $karma
-//             // ) );
-//             // if ( false === $ret ) {
-//             //     return new WP_Error(
-//             //       'rest_comment_karma_failed',
-//             //       __( 'Failed to update comment karma.' ),
-//             //       array( 'status' => 500 )
-//             //     );
-//             // }
 //             // return true;
 //         },
 //         'schema' => array(
