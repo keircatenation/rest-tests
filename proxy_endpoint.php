@@ -8,38 +8,43 @@ class Smartsheet_Controller {
     public $program_import_kind = '';
     public $reg_end_regex = '/(^[0-9]+)\s(days|hours|minutes)/i';
     public $member_discount_regex = '/(^[0-9]+)/i';
+    protected $smartsheet_authorization = '';
 
     public function __construct(){
         $this->namespace = 'rest-tests/v1';
         $this->resource_name = 'smartsheet';
-        $this->has_api_key = get_option( 'smartsheet_api_key' ) ? true : false;
-        $this->smartsheet_authorization = 'Bearer ' . get_option( 'smartsheet_api_key' );
+        if ( get_option( 'smartsheet_api_key' ) ) {
+            $this->smartsheet_authorization = 'Bearer ' . get_option( 'smartsheet_api_key' );
+        }
     }
 
     public function register_routes() {
         register_rest_route( $this->namespace, '/' . $this->resource_name . '/(?P<id>\d+)', array(
-            array(
-                'methods' => WP_REST_Server::READABLE,
-                'callback' => array( $this, 'get_results' ),
-                'permission_callback' => '__return_true',
-                'arguments' => array(
-                    'id' => array(
-                        'validate_callback' => function( $param, $request, $key ) {
-                            return is_numeric( $param );
+            'methods' => WP_REST_Server::READABLE,
+            'callback' => array( $this, 'get_results' ),
+            'permission_callback' => '__return_true',
+            'args' => array(
+                'id' => array(
+                    'description' => esc_html__( 'Smartsheet ID to get data from' ),
+                    'type' => 'number',
+                    'required' => true,
+                    'validate_callback' => function( $value, $request, $param ){
+                        if ( !is_numeric( $value ) ){
+                            return new WP_Error( 'rest_invalid_param', esc_html__( 'The id argument must be a number.', 'rest-tests' ), array( 'status' => 400 ) );
                         }
-                    )
-                ),
-                'sanitize_callback' => function ( $value, $request, $param ) {
-                    return sanitize_text_field( $value );
-                }
-            )
+                    },
+                    'sanitize_callback' => function( $value, $request, $param ) {
+                        return (int)$value;
+                    }
+                )
+            ),
         ) );
     }
 
     // gets the Results from Smartsheet
     public function get_results( $request ) {
         //If there's no API key in admin, then sned error that we can't make a call
-        if ( !$this->has_api_key ) {
+        if ( !$this->smartsheet_authorization ) {
             return new WP_Error( 'no_smartsheet_key', __( 'Please enter a Smartsheet API access key into the admin settings.', 'mag-extension' ), array( 'status' => 404 ) );
         }
 
@@ -63,7 +68,7 @@ class Smartsheet_Controller {
         $filter = $this->filter_results( $json['rows'] );
         $results = $this->map_results( $filter );
 
-        $response = new WP_REST_Response( array_values( $results ) );
+        $response = rest_ensure_response( array_values( $results ) );
         $response->set_status(200);
 
         return $response;

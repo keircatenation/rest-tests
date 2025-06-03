@@ -163,7 +163,7 @@ These hooks allow for modification and inspection of the request at different st
 6. `rest_pre_echo_response`: allows modification of the response data after inserting ambedded data; called right before the REST API gives the response to the user
 
 ### Hook: `pre_get_posts`
-- Not a REST API-centric hook, but if you check the request URI for `/wp-json/`, you can make sure your function will only fire on REST API requests
+Not a REST API-centric hook, but if you check the request URI for `/wp-json/`, you can make sure your function will only fire on REST API requests.
 ```
 if ( strpos( $_SERVER['REQUEST_URI'], '/wp-json/' ) !== false ) {
     add_filter( 'pre_get_posts', function( $query ) {
@@ -198,17 +198,80 @@ Endpoint-specific methods *do* need to be added, such as:
 - `register_routes`
 - `update_item_permissions_check`
 
-### PROXY ME, BABY
+### PROXY ME, BABY: `register_rest-route`
+One of the coolest things you can do with custom REST API endpoints is create proxy routes and endpoints. Any data that you can get via curl can be accessed with `wp_remote_get` (or whatever method you prefer) and exposed with a proxy endpoint. This data can be publicly available, or you can restrict it with authentication.
 
-You should use the validate_callback for your arguments to verify whether the input you are receiving is valid. The sanitize_callback should be used to transform the argument input or clean out unwanted parts out of the argument, before the argument is processed by the main callback.
+The basic registration just needs the function call:
+```
+add_action( 'rest_api_init', function(){
+    register_rest_route( 'NAMESPACE', '/RESOURCE_NAME', $arguments_array, $override );
+} );
+```
+But there are benefits to following the controller format:
+```
+class My_Cool_Controller {
+    public function __construct() {
+        $this->namespace = 'NAMESPACE';
+        $this->resource_name = 'RESOURCE_NAME';
+        $this->whatever = 'shrug emoji';
+    }
+    public function register_routes(){
+        register_rest_route( $this->namespace, '/' . $this->resource_name, _array_, $override );
+    }
+    ...
+}
+add_action( 'rest_api_init', function(){
+    $controller = new My_Cool_Controller();
+    $controller->register_routes();
+} );
+```
+#### `register_rest_route` arguments array
+Either an array of options for the endpoint, or an array of arrays for multiple methods.
+```
+$args = array(
+    'methods' => 'GET',
+    'callback' => array( $this, 'get_items' ),
+    'permission_callback' => __return_true,
+    'args' => aray(
+        'id' => array(
+            'description' => esc_html__( 'Smartsheet ID to get data from' ),
+            'type' => 'integer',
+            'enum' => array(  ),
+            'validate_callback' => function() {
+                // check if the argument matches what you want it to
+            },
+            'sanitize_callback' => function(){
+                // sanitize value to strip out unwanter data or transform it into a desired format
+            }
+        )
+    ),
+);
 
-https://developer.wordpress.org/rest-api/extending-the-rest-api/adding-rest-api-support-for-custom-content-types/
+$args_with_schema = array(
+    array(
+        'methods' => WP_REST_Server::READABLE,
+        'callback' => array( $this, 'get_items' ),
+        'permission_callback' => array( $this, 'get_permissions_check' ),
+    ),
+    array(
+        'methods' => WP_REST_Server::CREATABLE,
+        'callback' => array( $this, 'post_items' ),
+        'permission_callback' => array( $this, 'get_permissions_check' ),
+    ),
+    'schema' => array(
+        //schema
+    )
+);
+```
+- **methods**: the method for the particular endpoint. Use constants like `WP_REST_Server::READABLE`
+- **callback**: the function that executes the endpoint
+- **permission_callback**: the function that determines who can access/operate the endpoint. For public data, you can use `__return_true`, or you can create a function that checks against permissions
+- **`enum`** specifies what values the argument can take on -- if the input doesn't exist within that array, then the REST API will throw an error
+- **`sanitize_callback`** isn't necessary if you're restricting acceptable values via `enum`, but if you accept more values then it's extremely valuable, especially if you're updating a field.
+- **resorce schema**: indicates what fields are present for a particular object. Once a schema is provided, you can make sure that each object follows that schema pattern
 
-### rest_ensure_response
-https://developer.wordpress.org/reference/functions/rest_ensure_response/
-
-### CURIEs
-https://developer.wordpress.org/rest-api/extending-the-rest-api/modifying-responses/#adding-links-to-the-api-response
+#### `rest_ensure_response`
+This function wraps the data we want to return into a WP_REST_Response, and ensures it will be properly returned.
 
 ---
 
@@ -227,11 +290,15 @@ https://developer.wordpress.org/rest-api/extending-the-rest-api/modifying-respon
 - [register_post_meta](https://developer.wordpress.org/reference/functions/register_post_meta/)
 - [register_meta](https://developer.wordpress.org/reference/functions/register_meta/)
 - [rest_prepare_post_type](https://developer.wordpress.org/reference/functions/register_post_type/)
-- [rest_pre_echo_response](https://developer.wordpress.org/reference/hooks/rest_pre_echo_response/)
-- [Intercept WordPress API Requests](https://thriftydeveloper.com/2020/08/20/intercept-wordpress-api-requests/)
+- [register_rest_field](https://developer.wordpress.org/reference/functions/register_rest_field/)
+- [Adding Custom Fields to API Responses](https://developer.wordpress.org/rest-api/extending-the-rest-api/modifying-responses/#adding-custom-fields-to-api-responses)
+- [register_rest_field vs register_meta](https://developer.wordpress.org/rest-api/extending-the-rest-api/modifying-responses/#using-register_rest_field-vs-register_meta)
+- [rest_post_type_query](https://developer.wordpress.org/reference/hooks/rest_this-post_type_query/)
 - [rest_pre_dispatch](https://developer.wordpress.org/reference/hooks/rest_pre_dispatch/)
 - [Manipulate Incoming WordPress REST API Requests](https://tommcfarlin.com/incoming-wordpress-rest-api-requests/)
-- [Adding Custom Fields to API Responses](https://developer.wordpress.org/rest-api/extending-the-rest-api/modifying-responses/#adding-custom-fields-to-api-responses)
-- [register_rest_field](https://developer.wordpress.org/reference/functions/register_rest_field/)
-- [register_rest_field vs register_meta](https://developer.wordpress.org/rest-api/extending-the-rest-api/modifying-responses/#using-register_rest_field-vs-register_meta)
-- [List Post Arguments](https://developer.wordpress.org/rest-api/reference/posts/#arguments)
+- [rest_pre_echo_response](https://developer.wordpress.org/reference/hooks/rest_pre_echo_response/)
+- [Intercept WordPress API Requests](https://thriftydeveloper.com/2020/08/20/intercept-wordpress-api-requests/)
+- [List of WordPress Post Route Arguments](https://developer.wordpress.org/rest-api/reference/posts/#arguments)
+- [register_rest_route](https://developer.wordpress.org/reference/functions/register_rest_route/)
+- [Creating Endpoints](https://developer.wordpress.org/rest-api/extending-the-rest-api/routes-and-endpoints/#creating-endpoints)
+- [rest_ensure_response](https://developer.wordpress.org/reference/functions/rest_ensure_response/)
