@@ -257,8 +257,8 @@ add_action( 'init', function() {
 //     } );
 // }
 
-include_once 'proxy_endpoint.php';
-add_action( 'rest_api_init', function() {
-    $controller = new Smartsheet_Controller();
-    $controller->register_routes();
-} );
+// include_once 'proxy_endpoint.php';
+// add_action( 'rest_api_init', function() {
+//     $controller = new Smartsheet_Controller();
+//     $controller->register_routes();
+// } );
