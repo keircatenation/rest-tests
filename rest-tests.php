@@ -119,7 +119,7 @@ add_action( 'init', function() {
 //     $image = array(
 //         'html' => get_the_post_thumbnail( $post->ID ),
 //         'url' => wp_get_attachment_image_src( $response->data['featured_media'], 'large' ),
-//         'alt' => get_post_meta( $response->data['featured_media'], TRUE )
+//         'alt' => get_post_meta( $response->data['featured_media'], '_wp_attachment_image_alt', TRUE )
 //     );
 //     $response->data['image'] = $image;
 //     // $response->data['title'] = $response->data['title']['rendered'] . 'addition';
@@ -231,21 +231,6 @@ add_action( 'init', function() {
 // 	}
 // 	return $result;
 // }, 10, 3 );
-
-/**
- * ### Hook: `pre_get_posts`
- */
-// if ( strpos( $_SERVER['REQUEST_URI'], '/wp-json/' ) !== false ) {
-//     add_filter( 'pre_get_posts', function( $query ) {
-//         if ( $query->get( 'post_type' ) != 'exhibition_post_type' ) {
-// 			return $query;
-// 		}
-//         if ( isset( $_GET['has_password'] ) ) {
-//             $query->set( 'has_password', !(bool)$_GET['has_password'] );
-//         }
-//         return $query;
-//     } );
-// }
 
 // include_once 'proxy_endpoint.php';
 // add_action( 'rest_api_init', function() {

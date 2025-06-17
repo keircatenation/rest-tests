@@ -63,6 +63,8 @@ add_action( 'init', function() {
         'menu_position'       => 5,
         'capability_type'     => 'post',
         'show_in_rest'        => true,
+        'rest_base'           => 'funnies',
+        'rest_controller_class' => 'Custom_Funnies_Controller'
     ) );
 }, 0 );
 ```
@@ -161,7 +163,7 @@ These hooks allow for modification and inspection of the request at different st
 6. `rest_pre_echo_response`: allows modification of the response data after inserting ambedded data; called right before the REST API gives the response to the user
 
 ### Hook: `pre_get_posts`
-Not a REST API-centric hook, but if you check the request URI for `/wp-json/`, you can make sure your function will only fire on REST API requests.
+Not a REST API-centric hook, but if you check the request URI for `/wp-json/`, you can make sure your function will only fire on REST API requests. This might work better than `rest_{$this->post_type}_query` if you're trying to modify an endpoint that's registered through a third-party plugin instead of WordPress core, since WordPress REST API hooks will probably not be called when evaluating those routes and endpoints.
 ```
 if ( strpos( $_SERVER['REQUEST_URI'], '/wp-json/' ) !== false ) {
     add_filter( 'pre_get_posts', function( $query ) {
