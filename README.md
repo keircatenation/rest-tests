@@ -216,7 +216,7 @@ class My_Cool_Controller {
         $this->whatever = 'shrug emoji';
     }
     public function register_routes(){
-        register_rest_route( $this->namespace, '/' . $this->resource_name, _array_, $override );
+        register_rest_route( $this->namespace, '/' . $this->resource_name, array(), $override );
     }
     ...
 }
@@ -240,14 +240,14 @@ $args = array(
     'permission_callback' => __return_true,
     'args' => aray(
         'id' => array(
-            'description' => esc_html__( 'Smartsheet ID to get data from' ),
+            'description' => esc_html__( 'Whatever the argument is' ),
             'type' => 'integer',
             'enum' => array(  ),
             'validate_callback' => function() {
                 // check if the argument matches what you want it to
             },
             'sanitize_callback' => function(){
-                // sanitize value to strip out unwanter data or transform it into a desired format
+                // sanitize value to strip out unwanted data or transform it into a desired format
             }
         )
     ),
@@ -274,7 +274,7 @@ $args_with_schema = array(
 - **permission_callback**: the function that determines who can access/operate the endpoint. For public data, you can use `__return_true`, or you can create a function that checks against permissions
 - **`enum`** specifies what values the argument can take on -- if the input doesn't exist within that array, then the REST API will throw an error
 - **`sanitize_callback`** isn't necessary if you're restricting acceptable values via `enum`, but if you accept more values then it's extremely valuable, especially if you're updating a field.
-- **resorce schema**: indicates what fields are present for a particular object. Once a schema is provided, you can make sure that each object follows that schema pattern
+- **resource schema**: indicates what fields are present for a particular object. Once a schema is provided, you can make sure that each object follows that schema pattern
 
 #### `rest_ensure_response`
 This function wraps the data we want to return into a WP_REST_Response, and ensures it will be properly returned.
