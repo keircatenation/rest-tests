@@ -225,6 +225,12 @@ add_action( 'rest_api_init', function(){
     $controller->register_routes();
 } );
 ```
+#### Path variables
+Path variables are regular expressions that you tack onto the end of a resource name to create dynamic routes.
+```
+/namespace/resource_name/(?P<variable>[\d]+)
+```
+Since it's a regular expression, the path variable will only match what the RegEx matches. If the user input doesn't match the RegEx, the endpoints that match that route won't fire.
 #### `register_rest_route` arguments array
 Either an array of options for the endpoint, or an array of arrays for multiple methods.
 ```

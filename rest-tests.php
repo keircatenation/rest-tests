@@ -232,6 +232,47 @@ add_action( 'init', function() {
 // 	return $result;
 // }, 10, 3 );
 
+
+// add_action( 'rest_api_init', function(){
+//     register_rest_route( 'rest-tests/v1', 'hello', array(
+//         'methods' => WP_REST_Server::READABLE,
+//         'callback' => 'rest_tests_hello_get',
+//         'permission_callback' => '__return_true', // what users have access to
+//         'args' => array(
+//             'greeting' => array(
+//                 'description' => 'A greeting',
+//                 'type' => 'string',
+//                 'sanitize_callback' => function( $value, $request, $param ) {
+//                     return sanitize_text_field( $value );
+//                 }
+//             )
+//         )
+//     ) );
+//     register_rest_route( 'rest-tests/v1', 'hello/(?P<greeting>[\S]*)', array(
+//         'methods' => WP_REST_Server::READABLE,
+//         'callback' => 'rest_tests_specific_hello_get',
+//         'permission_callback' => '__return_true'
+//     ) );
+//     function rest_tests_hello_get( $request ){
+//         $word = isset( $request['greeting'] ) ? $request['greeting'] : 'hello';
+//         $greeting = $word . ' world';
+
+//         return rest_ensure_response( array(
+//             $greeting,
+//             'reg'
+//         ) );
+//     }
+//     function rest_tests_specific_hello_get( $request ){
+//         $greeting = $request['greeting'] . ' world';
+
+//         return rest_ensure_response( array(
+//             $greeting,
+//             'specific'
+//         ) );
+//     }
+// } );
+
+
 // include_once 'proxy_endpoint.php';
 // add_action( 'rest_api_init', function() {
 //     $controller = new Smartsheet_Controller();

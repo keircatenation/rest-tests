@@ -19,25 +19,10 @@ class Smartsheet_Controller {
     }
 
     public function register_routes() {
-        register_rest_route( $this->namespace, '/' . $this->resource_name . '/(?P<id>\d+)', array(
+        register_rest_route( $this->namespace, '/' . $this->resource_name . '/(?P<id>[\d]+)', array(
             'methods' => WP_REST_Server::READABLE,
             'callback' => array( $this, 'get_results' ),
-            'permission_callback' => '__return_true',
-            'args' => array(
-                'id' => array(
-                    'description' => esc_html__( 'Smartsheet ID to get data from' ),
-                    'type' => 'number',
-                    'required' => true,
-                    'validate_callback' => function( $value, $request, $param ){
-                        if ( !is_numeric( $value ) ){
-                            return new WP_Error( 'rest_invalid_param', esc_html__( 'The id argument must be a number.', 'rest-tests' ), array( 'status' => 400 ) );
-                        }
-                    },
-                    'sanitize_callback' => function( $value, $request, $param ) {
-                        return (int)$value;
-                    }
-                )
-            ),
+            'permission_callback' => '__return_true'
         ) );
     }
 
